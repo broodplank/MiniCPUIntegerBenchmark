@@ -1,5 +1,5 @@
 #!/bin/bash
-#MINI CPU INTEGER BENCHMARK SCRIPT v1.0
+#MINI CPU INTEGER BENCHMARK SCRIPT v1.1
 #CREATED BY BROODPLANK
 
 #PLEASE READ
@@ -7,6 +7,7 @@
 #INSTALLATION ON DEVICE: ./score --install
 
 
+# Launch when --install as param is given
 if [[ $1 = "--install"  ]]; then
 	echo "Installing on device..."
 	adb root
@@ -23,78 +24,85 @@ if [[ $1 = "--install"  ]]; then
 	exit
 fi;
 
-echo "Mini CPU Integer benchmark"
-echo "by broodplank"
+# Header
+echo "Mini CPU Integer benchmark (by broodplank)"
 echo
-echo "Waiting for device"
+echo "Waiting for device (Make sure USB debugging is enabled)"
 adb wait-for-device
-echo "Found!"
-echo
-echo "Starting benchmark"
-echo
 export DEVICE=`adb shell "cat /system/build.prop | grep ro.build.product | sed -e 's|ro.build.product=||g' | tail -1"`
 export BOARD=`adb shell "cat /system/build.prop | grep ro.board.platform | sed -e 's|ro.board.platform=||g' | tail -1"`
 export CPUSPEED=`adb shell "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq"`
+echo "Device with ADB connection been found, continuing"
+echo
+echo "Starting Benchmark"
+echo
+
+# Single thread tests
 echo "--> CPU single thread integer test"
-echo
+
 echo -n "-- First run: "
-adb shell "busybox time -p '/system/bin/run'" > cpu1
-cat cpu1 | grep real | sed -e 's|real ||g' > cpu1s
+adb shell "busybox time -p '/system/bin/run'" | grep real | sed -e 's|real ||g' > cpu1s
 cat cpu1s
+
 echo -n "-- Second run: "
-adb shell "busybox time -p '/system/bin/run'" > cpu2
-cat cpu2 | grep real | sed -e 's|real ||g' > cpu2s
+adb shell "busybox time -p '/system/bin/run'" | grep real | sed -e 's|real ||g' > cpu2s
 cat cpu2s
+
 echo -n "-- Third run: "
-adb shell "busybox time -p '/system/bin/run'" > cpu3
-cat cpu3 | grep real | sed -e 's|real ||g' > cpu3s
+adb shell "busybox time -p '/system/bin/run'" | grep real | sed -e 's|real ||g' > cpu3s
 cat cpu3s
-echo
+
+# Get average time elapsed
 echo -n "- Average: "
 paste -sd+ cpu1s cpu2s cpu3s > sscore
+rm cpu1s cpu2s cpu3s
 awk '{s+=$1} END {print s}' sscore > sscorefinal
+rm sscore
 export READSAVERAGE=`cat sscorefinal`
 export READSCORE1=`echo $READSAVERAGE / 3 | bc -l`
 echo $READSCORE1 | awk '{printf("%.2f\n", $1)}' > score1final
 cat score1final
-rm cpu1 cpu2 cpu3 cpu1s cpu2s cpu3s sscore
-echo
+
+# Multi thread tests
 echo
 echo "--> CPU multi thread integer test"
-echo
+
 echo -n "-- First run: "
-adb shell "busybox time -p '/system/bin/run2'" > mcpu1
-cat mcpu1 | grep real | sed -e 's|real ||g' > mcpu1s
+adb shell "busybox time -p '/system/bin/run2'" | grep real | sed -e 's|real ||g' > mcpu1s
 cat mcpu1s
+
 echo -n "-- Second run: "
-adb shell "busybox time -p '/system/bin/run2'" > mcpu2
-cat mcpu2 | grep real | sed -e 's|real ||g' > mcpu2s
+adb shell "busybox time -p '/system/bin/run2'" | grep real | sed -e 's|real ||g' > mcpu2s
 cat mcpu2s
+
 echo -n "-- Third run: "
-adb shell "busybox time -p '/system/bin/run2'" > mcpu3
-cat mcpu3 | grep real | sed -e 's|real ||g' > mcpu3s
+adb shell "busybox time -p '/system/bin/run2'" | grep real | sed -e 's|real ||g' > mcpu3s
 cat mcpu3s
-echo
+
+# Get average time elapsed
 echo -n "- Average: "
 paste -sd+ mcpu1s mcpu2s mcpu3s > mscore
+rm mcpu1s mcpu2s mcpu3s
 awk '{s+=$1} END {print s}' mscore > mscorefinal
+rm mscore
 export READSMAVERAGE=`cat mscorefinal`
 export READSCORE2=`echo $READSMAVERAGE / 3 | bc -l`
 echo $READSCORE2 | awk '{printf("%.2f\n", $1)}' > score2final
 cat score2final
-echo
-rm mcpu1 mcpu2 mcpu3 mcpu1s mcpu2s mcpu3s mscore
+
+# Count up score
 echo
 paste -sd+ score1final score2final > totalscoretemp
 awk '{s+=$1} END {print s}' totalscoretemp > totalscore
 export TOTALSCORE=`cat totalscore`
 echo -n "- Final score: $TOTALSCORE - "
 
+# Show fitting message
 if (( $(echo "$TOTALSCORE < 5" | bc -l) )); then
 	echo "'WOW! Your CPU is blazing fast! Are you sure it's not a PC?'"
 fi;
 if (( $(echo "$TOTALSCORE > 5 && $TOTALSCORE < 10" | bc -l) )); then
-	echo "'Very nice, your CPU is anywhere near the top models'"
+	echo "'Very nice, your CPU is somewhere near the top models range'"
 fi;
 if (( $(echo "$TOTALSCORE > 10 && $TOTALSCORE < 15" | bc -l) )); then
 	echo "'Nice, your CPU speed is above average (first gen quad core)'"
@@ -112,8 +120,10 @@ if (( $(echo "$TOTALSCORE > 25 && $TOTALSCORE < 30" | bc -l) )); then
 	echo "'Are you sure you haven't bought an abacus instead of a smartphone?'"
 fi;
 
+# Bump device model, board and max cpu freq
 echo "- Device: $DEVICE"
 echo "- Board: $BOARD"
 echo "- MAX CPU Freq: $CPUSPEED"
-rm sscorefinal mscorefinal totalscore totalscoretemp score1final score2final
 
+# Remove leftovers
+rm sscorefinal mscorefinal totalscore totalscoretemp score1final score2final
