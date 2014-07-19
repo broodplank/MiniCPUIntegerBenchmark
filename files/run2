@@ -1,0 +1,19 @@
+#!/system/bin/sh
+( busybox echo '2^2^1' | /system/bin/bc ) &
+( busybox echo '2^2^2' | /system/bin/bc ) &
+( busybox echo '2^2^3' | /system/bin/bc ) &
+( busybox echo '2^2^4' | /system/bin/bc ) &
+( busybox echo '2^2^5' | /system/bin/bc ) &
+( busybox echo '2^2^6' | /system/bin/bc ) &
+( busybox echo '2^2^7' | /system/bin/bc ) &
+( busybox echo '2^2^8' | /system/bin/bc ) &
+( busybox echo '2^2^9' | /system/bin/bc ) &
+( busybox echo '2^2^10' | /system/bin/bc ) &
+( busybox echo '2^2^11' | /system/bin/bc ) &
+( busybox echo '2^2^12' | /system/bin/bc ) &
+( busybox echo '2^2^13' | /system/bin/bc ) &
+( busybox echo '2^2^14' | /system/bin/bc ) &
+( busybox echo '2^2^15' | /system/bin/bc ) &
+( busybox echo '2^2^16' | /system/bin/bc ) &
+( busybox echo '2^2^17' | /system/bin/bc ) &
+( busybox echo '2^2^18' | /system/bin/bc )
