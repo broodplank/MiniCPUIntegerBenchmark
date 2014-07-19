@@ -116,7 +116,7 @@ fi;
 if (( $(echo "$TOTALSCORE > 25 && $TOTALSCORE < 30" | bc -l) )); then
 	echo "'Hmmm, You must be running one of the first smartphones'"
 fi;
-if (( $(echo "$TOTALSCORE > 25 && $TOTALSCORE < 30" | bc -l) )); then
+if (( $(echo "$TOTALSCORE > 30 | bc -l) )); then
 	echo "'Are you sure you haven't bought an abacus instead of a smartphone?'"
 fi;
 
