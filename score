@@ -1,5 +1,5 @@
 #!/bin/bash
-#MINI CPU INTEGER BENCHMARK SCRIPT v1.1
+#MINI CPU INTEGER BENCHMARK SCRIPT v1.2
 #CREATED BY BROODPLANK
 
 #PLEASE READ
@@ -19,8 +19,13 @@ if [[ $1 = "--install"  ]]; then
 	adb shell 'chmod 755 /system/bin/run'
 	adb push files/run2 /system/bin/run2
 	adb shell 'chmod 755 /system/bin/run2'
+	adb push files/score /system/bin/score
+	adb shell 'chmod 755 /system/bin/score'
 	echo "Done!"
-	echo "Please relaunch without the --install parameter to benchmark"
+	echo
+	echo "To launch benchmark:"
+	echo "1. Relaunch without the '--install' parameter to benchmark from PC"
+	echo "2. Execute 'score' from Terminal Emulator on device"
 	exit
 fi;
 

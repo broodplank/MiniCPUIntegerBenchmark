@@ -1,0 +1,108 @@
+#!/system/bin/sh
+#MINI CPU INTEGER BENCHMARK SCRIPT v1.1
+#CREATED BY BROODPLANK
+
+# Header
+echo "Mini CPU Integer benchmark (by broodplank)"
+echo
+export DEVICE=`cat /system/build.prop | grep ro.build.product | sed -e 's|ro.build.product=||g' | tail -1`
+export BOARD=`cat /system/build.prop | grep ro.board.platform | sed -e 's|ro.board.platform=||g' | tail -1`
+export CPUSPEED=`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq`
+echo "Starting Benchmark"
+echo
+
+# Single thread tests
+echo "--> CPU single thread integer test"
+
+echo -n "-- First run: "
+busybox time -p '/system/bin/run' > /dev/null 2> /sdcard/cpu1s 
+busybox sed -i 's|real ||g' /sdcard/cpu1s
+head -n1 /sdcard/cpu1s
+
+echo -n "-- Second run: "
+busybox time -p '/system/bin/run' > /dev/null 2> /sdcard/cpu2s 
+busybox sed -i 's|real ||g' /sdcard/cpu2s
+head -n1 /sdcard/cpu2s
+
+echo -n "-- Third run: "
+busybox time -p '/system/bin/run' > /dev/null 2> /sdcard/cpu3s 
+busybox sed -i 's|real ||g' /sdcard/cpu3s
+head -n1 /sdcard/cpu3s
+
+# Get average time elapsed
+echo -n "- Average: "
+awk '{x+=$0}END{print x}' /sdcard/cpu1s /sdcard/cpu2s /sdcard/cpu3s > /sdcard/sscore
+rm /sdcard/cpu1s /sdcard/cpu2s /sdcard/cpu3s
+awk '{s+=$1} END {print s}' /sdcard/sscore > /sdcard/sscorefinal
+rm /sdcard/sscore
+export READSAVERAGE=`cat /sdcard/sscorefinal`
+export READSCORE1=`echo $READSAVERAGE / 3 | /system/bin/bc -l`
+echo $READSCORE1 | awk '{printf("%.2f\n", $1)}' > /sdcard/score1final
+cat /sdcard/score1final
+
+# Multi thread tests
+echo
+echo "--> CPU multi thread integer test"
+
+echo -n "-- First run: "
+busybox time -p '/system/bin/run2' > /dev/null 2> /sdcard/mcpu1s 
+busybox sed -i 's|real ||g' /sdcard/mcpu1s
+head -n1 /sdcard/mcpu1s
+
+echo -n "-- Second run: "
+busybox time -p '/system/bin/run2' > /dev/null 2> /sdcard/mcpu2s 
+busybox sed -i 's|real ||g' /sdcard/mcpu2s
+head -n1 /sdcard/mcpu2s
+
+echo -n "-- Third run: "
+busybox time -p '/system/bin/run2' > /dev/null 2> /sdcard/mcpu3s 
+busybox sed -i 's|real ||g' /sdcard/mcpu3s
+head -n1 /sdcard/mcpu3s
+# Get average time elapsed
+echo -n "- Average: "
+awk '{x+=$0}END{print x}' /sdcard/mcpu1s /sdcard/mcpu2s /sdcard/mcpu3s > /sdcard/mscore
+rm /sdcard/mcpu1s /sdcard/mcpu2s /sdcard/mcpu3s
+awk '{s+=$1} END {print s}' /sdcard/mscore > /sdcard/mscorefinal
+rm /sdcard/mscore
+export READMAVERAGE=`cat /sdcard/mscorefinal`
+export READSCORE2=`echo $READMAVERAGE / 3 | /system/bin/bc -l`
+echo $READSCORE2 | awk '{printf("%.2f\n", $1)}' > /sdcard/score2final
+cat /sdcard/score2final
+
+# Count up score
+echo
+awk '{x+=$0}END{print x}' /sdcard/score1final /sdcard/score2final > /sdcard/totalscoretemp
+awk '{s+=$1} END {print s}' /sdcard/totalscoretemp > /sdcard/totalscore
+export TOTALSCORE=`cat /sdcard/totalscore`
+echo -n "- Final score: $TOTALSCORE - "
+
+# Show fitting message
+if (( $(echo "$TOTALSCORE < 5" | /system/bin/bc -l) )); then
+	echo "'WOW! Your CPU is blazing fast! Are you sure it's not a PC?'"
+fi;
+if (( $(echo "$TOTALSCORE > 5 && $TOTALSCORE < 10" | /system/bin/bc -l) )); then
+	echo "'Very nice, your CPU is somewhere near the top models range'"
+fi;
+if (( $(echo "$TOTALSCORE > 10 && $TOTALSCORE < 15" | /system/bin/bc -l) )); then
+	echo "'Nice, your CPU speed is above average (first gen quad core)'"
+fi;
+if (( $(echo "$TOTALSCORE > 15 && $TOTALSCORE < 20" | /system/bin/bc -l) )); then
+	echo "'Pretty good, your device is most likely a dual core'"
+fi;
+if (( $(echo "$TOTALSCORE > 20 && $TOTALSCORE < 25" | /system/bin/bc -l) )); then
+	echo "'Decent, You probably have one of the first dual cores'"
+fi;
+if (( $(echo "$TOTALSCORE > 25 && $TOTALSCORE < 30" | /system/bin/bc -l) )); then
+	echo "'Hmmm, You must be running one of the first smartphones'"
+fi;
+if (( $(echo "$TOTALSCORE > 30" | /system/bin/bc -l) )); then
+	echo "'Are you sure you haven't bought an abacus instead of a smartphone?'"
+fi;
+
+# Bump device model, board and max cpu freq
+echo "- Device: $DEVICE"
+echo "- Board: $BOARD"
+echo "- MAX CPU Freq: $CPUSPEED"
+
+# Remove leftovers
+rm /sdcard/sscorefinal /sdcard/mscorefinal /sdcard/totalscore /sdcard/totalscoretemp /sdcard/score1final /sdcard/score2final
